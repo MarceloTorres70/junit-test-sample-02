@@ -1,95 +1,72 @@
-# Spring Boot Example
-
-`/GET /POST /PUT /DELETE` APIs for managing cakes.
-
-## Tech stack
-
-* Java 8
-* Spring boot - CRUD operations for managing cakes; application exposed on port `8081`
-* Spring boot security - basic authentication applied to all APIs
-* H2 database - for production and test code
-* Swagger
-* OpenApi
-* Lombok
-* Maven
-* Docker
-
-## Prerequisites
-
-In order to build the project, you will have to install the following:
-
-* Java 8
-* Maven
-* This project includes **Lombok Annotations**, this means that in order for your IDE to correctly compile your project you'll need to add the Lombok plugin to your IDE and `Enable annotation processing` (for IntelliJ IDEA).
-
-
-## Build
-
-### Maven
-
+﻿# Laboratorio 9: Pruebas de Carga y Automatizacion con JMeter
+Este proyecto implementa un servicio REST (Spring Boot) configurado para soportar pruebas de carga de alto rendimiento. Incluye scripts de automatizacion para orquestar el ciclo de vida de las pruebas (Despliegue -> Prueba -> Reporte).
+## Requisitos Previos
+- **Java JDK 25**
+- **Apache JMeter 5.6.3** (Configurado en PATH o en `C:\tools\apache-jmeter-5.6.3`)
+- **PowerShell** (para ejecutar el script de automatizacion)
+## Como Ejecutar (Automatizacion)
+No es necesario iniciar el servidor manualmente. El proyecto incluye un script de ingenieria que realiza la limpieza, el despliegue del backend, la espera activa del puerto y la ejecucion de JMeter automaticamente.
+1. Abrir una terminal en la raiz del proyecto.
+2. Ejecutar el script maestro:
+```powershell
+./run_lab_test.ps1
 ```
-mvn clean install
+### Que hace este script?
+- Limpia procesos zombies (Java/JMeter) y reportes antiguos.
+- Inicia el servidor Spring Boot en el puerto 8081.
+- Espera inteligentemente hasta que el puerto este escuchando.
+- Ejecuta la carga de 50 usuarios concurrentes con JMeter.
+- Genera el reporte HTML en `report_dashboard/index.html`.
+## Cambios Importantes
+- **Seguridad**: Se reconfiguro `SecurityConfig.java` para exponer el endpoint `/cakes` (permitAll), permitiendo auditorias de carga externas sin bloqueos 401.
+- **Lombok**: Se estabilizo la dependencia a la version 1.18.36.
+## Resultados Esperados
 ```
-## Run
-
-### Maven
-
+summary = 500 in 00:00:10 = 50.9/s Avg: 2 Min: 0 Max: 168 Err: 0 (0.00%)
 ```
-mvn spring-boot:run
+- **Tasa de error**: 0.00%
+- **Throughput**: ~50 peticiones/segundo
+- **Tiempo de respuesta promedio**: 2ms
+## Arquitectura
 ```
-
-## Swagger / OpenApi
-
-Swagger endpoint: [http://localhost:8081/swagger-ui/index.html](http://localhost:8081/swagger-ui/index.html)
-
-OpenApi endpoint: [http://localhost:8081/v3/api-docs](http://localhost:8081/v3/api-docs)
-
-_**Important**_: swagger/openapi dependency for spring-boot 3 is now `springdoc-openapi-starter-webmvc-ui`  
-
-## APIs
-
-All APIs are secured using basic auth. Use the following credentials when making requests:
+junit-test-sample-02/
+├── src/
+│   ├── main/java/epn/edu/ec/
+│   │   ├── config/SecurityConfig.java    # Configuracion de seguridad
+│   │   ├── controller/                   # Controladores REST
+│   │   ├── model/                        # Entidades JPA
+│   │   └── repository/                   # Repositorios
+│   └── test/                             # Tests unitarios y de integracion
+├── load_test.jmx                         # Plan de pruebas JMeter
+├── run_lab_test.ps1                      # Script de automatizacion
+└── pom.xml                               # Configuracion Maven
 ```
-username=cake-user
-password=cake-password-which-should-be-kept-in-a-secret-place-and-injected-when-application-is-deployed
-```
-
-* GET /cakes
-```
-curl 'localhost:8081/cakes' \
--u "cake-user:cake-password-which-should-be-kept-in-a-secret-place-and-injected-when-application-is-deployed"
-```
-
-* GET /cakes/{cake_id}
-```
-curl 'localhost:8081/cakes/15' \
--u "cake-user:cake-password-which-should-be-kept-in-a-secret-place-and-injected-when-application-is-deployed"
-```
-
-* POST /cakes
-```
-curl -X POST 'localhost:8081/cakes' \
--u "cake-user:cake-password-which-should-be-kept-in-a-secret-place-and-injected-when-application-is-deployed" \
---header 'Content-Type: application/json' \
---data-raw '{
-    "title": "some title",
-    "description": "some description"
-}'
-```
-
-* PUT /cakes/{cake_id}
-```
-curl -X PUT 'localhost:8081/cakes/15' \
--u "cake-user:cake-password-which-should-be-kept-in-a-secret-place-and-injected-when-application-is-deployed" \
---header 'Content-Type: application/json' \
---data-raw '{
-    "title": "some title updated",
-    "description": "some description updated"
-}'
-```
-
-* DELETE /cakes/{cake_id}
-```
-curl -X DELETE 'localhost:8081/cakes/15' \
--u "cake-user:cake-password-which-should-be-kept-in-a-secret-place-and-injected-when-application-is-deployed"
-```
+## Ejecucion Manual (Alternativa)
+Si prefieres ejecutar manualmente cada paso:
+1. **Iniciar el servidor**:
+   ```bash
+   mvn spring-boot:run
+   ```
+2. **Ejecutar JMeter** (en otra terminal):
+   ```bash
+   C:\tools\apache-jmeter-5.6.3\bin\jmeter -n -t load_test.jmx -l results.jtl -e -o report_dashboard
+   ```
+3. **Ver el reporte**:
+   Abre `report_dashboard/index.html` en tu navegador.
+## Tecnologias Utilizadas
+- **Spring Boot 3.4.4**
+- **Spring Security 6.1+**
+- **Spring Data JPA**
+- **H2 Database** (en memoria)
+- **Lombok 1.18.36**
+- **Apache JMeter 5.6.3**
+- **Maven 3.9+**
+## Objetivo del Laboratorio
+Demostrar la capacidad de:
+1. Configurar un backend REST resiliente
+2. Exponer endpoints publicos para pruebas de carga
+3. Automatizar el ciclo de vida de las pruebas
+4. Generar reportes profesionales de rendimiento
+---
+**Autor**: Laboratorio 9 - Pruebas de Carga  
+**Fecha**: 2026-02-02

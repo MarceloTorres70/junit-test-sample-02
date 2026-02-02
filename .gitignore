@@ -1,4 +1,28 @@
-target
+# Maven
+target/
+/target
+
+# JMeter Reports and Logs
+/report_dashboard
+report_dashboard/
+results.jtl
+jmeter.log
+*.log
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
